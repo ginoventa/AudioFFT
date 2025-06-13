@@ -1,0 +1,192 @@
+#Exercício 1:
+#letra a:
+#!/usr/bin/env python3
+"""
+malha_degrau.py
+
+Gera uma malha de 1000 pontos no intervalo [-5, 5),
+dispensa o último ponto, calcula a função degrau unitário
+nesse grid e plota o resultado.
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def degrau_unitario(v):
+    """Função degrau unitário: 0 para v<0, 1 para v>=0."""
+    return np.where(v >= 0, 1, 0)
+
+def main():
+    # Parâmetros conforme enunciado
+    T = 10
+    N = 1000
+    inicio = -5
+    fim = 5
+
+    # 1) passo
+    passo = T / N  # 0.01
+
+    # 2) gera a malha x, sem incluir o ponto final
+    x = np.arange(inicio, fim, passo)
+
+    # 3) calcula y = f(x)
+    y = degrau_unitario(x)
+
+    # 4) exibe verificações
+    print(f"Comprimento de x: {x.size}")  # deve ser 1000
+    print(f"Comprimento de y: {y.size}")  # idem
+
+    # 5) plota
+    plt.figure(figsize=(8,4))
+    plt.plot(x, y, linewidth=1.5)
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.title("Função Degrau Unitário")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+	
+#letra b (soma direta via números complexos):
+#!/usr/bin/env python3
+"""
+inner_products.py
+
+Calcula os produtos internos ⟨φ_j, φ_j⟩ para j = 1,2,...,10
+onde φ_j[n] = exp(i·2π·j·n/N), n=0..N−1, e N = número de amostras.
+"""
+
+import numpy as np
+
+def main():
+    N = 1000  # número de amostras
+    js = np.arange(1, 11)  # j = 1 a 10
+
+    # Para cada j, φ_j[n]
+    inner_products = []
+    for j in js:
+        n = np.arange(N)
+        phi_j = np.exp(1j * 2 * np.pi * j * n / N)
+        # produto interno ⟨φ_j, φ_j⟩ = sum(conj(phi_j)*phi_j)
+        ip = np.vdot(phi_j, phi_j)
+        inner_products.append(ip.real)  # é real, deve dar N
+
+    # Exibe resultados
+    print("j   ⟨φ_j,φ_j⟩")
+    print("--- --------")
+    for j, ip in zip(js, inner_products):
+        print(f"{j:2d}   {ip:.0f}")
+
+if __name__ == "__main__":
+    main()
+
+#letra b (integral real):
+T = 10;  N = 1000;
+x = -5 : (T/N) : 5;  x(end) = [];
+dx = T/N;
+
+for j = 1:10
+    phi = cos(2*pi*j*x/T);          % base real
+    norms(j) = sum(phi.^2) * dx;    % soma * dx ≈ ∫ cos^2 = T/2 = 5
+end
+disp(norms)
+
+#letra c:
+import numpy as np
+
+def main():
+    # Parâmetros
+    T = 10.0
+    N = 1000
+    dx = T / N
+
+    # a) Malha e degrau
+    x = np.linspace(-5, 5, N, endpoint=False)
+    y = np.where(x >= 0, 1.0, 0.0)
+
+    # b) Produto interno das bases reais (cos)
+    norms = np.zeros(10)
+    for j in range(1, 11):
+        phi = np.cos(2 * np.pi * j * x / T)
+        norms[j-1] = np.sum(phi**2) * dx
+    print("⟨ϕ_j,ϕ_j⟩ (j=1..10):", np.round(norms, 6))
+
+    # c1) Coeficientes reais diretos: a_j (cos) e b_j (sin)
+    a_direct = np.zeros(11)
+    b_direct = np.zeros(11)
+    a_direct[0] = (1/T) * np.sum(y) * dx
+    for j in range(1, 11):
+        a_direct[j] = (2/T) * np.sum(y * np.cos(2*np.pi*j*x/T)) * dx
+        b_direct[j] = (2/T) * np.sum(y * np.sin(2*np.pi*j*x/T)) * dx
+
+    print("\nCoeficientes diretos:")
+    for j in range(11):
+        print(f" a[{j:2d}] = {a_direct[j]: .6f},   b[{j:2d}] = {b_direct[j]: .6f}")
+
+    # c2) Coeficientes complexos via FFT
+    Y = np.fft.fft(y)
+    Yh = Y[:11]  # harmônicos 0..10
+    c = np.zeros(11, dtype=complex)
+    c[0] = Yh[0] / N
+    for j in range(1, 11):
+        c[j] = Yh[j] / (N / 2)  # já inclui fator 2 da simetria
+
+    print("\nCoeficientes complexos c_j (FFT):")
+    for j in range(11):
+        re, im = c[j].real, c[j].imag
+        a_from_fft = 2 * re     # a_j = 2·Re(c_j)
+        b_from_fft = -2 * im    # b_j = -2·Im(c_j)
+        print(f" c[{j:2d}] = {re:+.6f}{im:+.6f}j"
+              f"   → a = {a_from_fft:+.6f},   b = {b_from_fft:+.6f}")
+
+if __name__ == "__main__":
+    main()
+
+
+#Exercício 2:
+import numpy as np
+import matplotlib.pyplot as plt
+
+def main():
+    T = 20.0            # tamanho do intervalo (-10 a 10)
+    N = 1000            # número de amostras
+    dx = T / N          # passo no eixo x
+    x = np.linspace(-10, 10, N, endpoint=False)
+
+    # Sinal degrau
+    y = np.where(x >= 0, 1.0, 0.0)
+
+    # Frequências associadas à FFT
+    f = np.fft.fftfreq(N, d=dx)
+
+    # Mostrar no terminal as primeiras 20 frequências
+    print("Primeiras 20 frequências associadas à FFT:")
+    print(f"{'Índice':>6} | {'Frequência (Hz)':>15}")
+    print("-" * 28)
+    for i in range(20):
+        print(f"{i:6d} | {f[i]:15.6f}")
+
+    # Calcular FFT
+    Y = np.fft.fft(y)
+
+    # Mostrar as magnitudes das primeiras 20 componentes
+    print("\nPrimeiras 20 magnitudes |Y(f)| da FFT:")
+    print(f"{'Índice':>6} | {'|Y(f)|':>12}")
+    print("-" * 22)
+    for i in range(20):
+        print(f"{i:6d} | {np.abs(Y[i]):12.5f}")
+
+    # Plotar espectro completo
+    plt.plot(f, np.abs(Y))
+    plt.title("Espectro da FFT")
+    plt.xlabel("Frequência (Hz)")
+    plt.ylabel("|Y(f)|")
+    plt.grid(True)
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+	
+#Exercício 3:
