@@ -2,68 +2,134 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
 
-##
-#Exercício 1 - Relação entre mínimos quadrados trigonométricos e FFT
-##
+#!/usr/bin/env python3
+"""
+Exercício 1 - Análise de Sinais
 
-#Variáveis globais do programa
-T = 10 #Intervalo
-N = 1000 #Número de amostras 
-x = np.arange(-5, 5, T / N) #Definição da malha espaçada por intervalos de 0.01, com exceção de 5
+Letra a: Geração de malha e função degrau
+Letra b: Produto interno por números complexos e integrais reais
+Letra c: Coeficientes de Fourier diretos e via FFT
+"""
 
-#a) Gere a malha x = -5:(10/1000):5, dispense o último ponto, calcule os valores de f nesses pontos e armazene num vetor y.
-y = (x >= 0).astype(float) #Definição dos valores unitários
+import numpy as np
+import matplotlib.pyplot as plt
 
-#b) Calcule ⟨ϕj, ϕj ⟩ para j = 1, 2, 3, ..., 10 no computador, e baseado nos resultados descubra a relação com o número de amostras.
-produtosInternos = []
-for j in range(1, 11):
-    k = np.floor((j + 1) / 2)
-    if j % 2 == 1:
-        integrando = lambda x: np.sin(2 * np.pi * k * x / T) ** 2
-    else:
-        integrando = lambda x: np.cos(2 * np.pi * k * x / T) ** 2
-    val, _ = quad(integrando, -5, 5)
-    produtosInternos.append(val)
+# ----------------------------
+# Letra a: Função degrau unitário
+# ----------------------------
+def degrau_unitario(v):
+    """Função degrau unitário: 0 para v<0, 1 para v>=0."""
+    return np.where(v >= 0, 1, 0)
 
-print("Produtos internos <phi_j, phi_j> para j=1..10:")
-for j, val in enumerate(produtosInternos, start=1):
-    print(f"<phi_{j}, phi_{j}> ≈ {val:.5f}")
+def letra_a():
+    print("\n--- Letra a: Função Degrau Unitário ---")
+    T = 10
+    N = 1000
+    inicio = -5
+    fim = 5
+    passo = T / N
 
-#c) Calcule a0, a1, . . . , a10. No Octave/Matlab, pe¸ca f = fft(y), descarte a última 
-# metade do vetor f, e compare os coeficientes com os a obtidos. Qual a relação entre eles?
-#c-1)Cálculo dos coeficientes via integral
-a0, _ = quad(lambda x: float(x >= 0), -5, 5)
-a0 = a0 / 10
-coeficientes = [a0]
-for j in range(1, 11):
-    k = ((j + 1) / 2)
-    if j % 2 == 1:
-        phi_j = lambda x: np.sin(2 * np.pi * k * x / T)
-    else:
-        phi_j = lambda x: np.cos(2 * np.pi * k * x / T)
-    numerador, _ = quad(lambda x: float(x >= 0) * phi_j(x), -5, 5)
-    denominador, _ = quad(lambda x: phi_j(x) ** 2, -5, 5)
-    aj = numerador / denominador
-    coeficientes.append(aj)
-print("\nCoeficientes a0..a10 calculados via integrais:")
-for i, c in enumerate(coeficientes):
-    print(f"a{i} = {c:.5f}")
+    x = np.arange(inicio, fim, passo)
+    y = degrau_unitario(x)
 
-#c-2)Cálculo dos coeficientes via FFT
-f_fft = np.fft.fft(y)
-freqs = np.fft.fftfreq(N, d=T/N)
-print("\nFFT (normalizada, primeiros 11 coeficientes):")
-for i in range(11):
-    print(f"f_fft[{i}] = {f_fft[i]/N:.5f}")
+    print(f"Comprimento de x: {x.size}")  # Deve ser 1000
+    print(f"Comprimento de y: {y.size}")  # Deve ser 1000
 
-a_fft = [f_fft[0].real / N]
+    plt.figure(figsize=(8, 4))
+    plt.plot(x, y, linewidth=1.5)
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.title("Função Degrau Unitário")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-for k in range(1, 6): #Normalização dos coeficientes e extração da parte real e imaginária 
-    a_sin = 2 * f_fft[k].imag / N
-    a_cos = 2 * f_fft[k].real / N
-    a_fft.append(a_sin)
-    a_fft.append(a_cos)
+# ----------------------------
+# Letra b.1: Produto interno via números complexos
+# ----------------------------
+def produto_interno_complexo():
+    print("\n--- Letra b.1: Produto Interno via Números Complexos ---")
+    N = 1000
+    js = np.arange(1, 11)
 
-print("\nCoeficientes a_j extraídos da FFT (normalizados):")
-for i, val in enumerate(a_fft):
-    print(f"a{i} = {val:.5f}")
+    inner_products = []
+    for j in js:
+        n = np.arange(N)
+        phi_j = np.exp(1j * 2 * np.pi * j * n / N)
+        ip = np.vdot(phi_j, phi_j)
+        inner_products.append(ip.real)
+
+    print("j   ⟨φ_j,φ_j⟩")
+    print("--- --------")
+    for j, ip in zip(js, inner_products):
+        print(f"{j:2d}   {ip:.0f}")
+
+# ----------------------------
+# Letra b.2: Produto interno via base real (integral)
+# ----------------------------
+def produto_interno_real():
+    print("\n--- Letra b.2: Produto Interno via Integral Real (base cos) ---")
+    T = 10
+    N = 1000
+    dx = T / N
+    x = np.linspace(-5, 5, N, endpoint=False)
+
+    norms = np.zeros(10)
+    for j in range(1, 11):
+        phi = np.cos(2 * np.pi * j * x / T)
+        norms[j - 1] = np.sum(phi ** 2) * dx
+
+    print("⟨ϕ_j,ϕ_j⟩ (j = 1..10):", np.round(norms, 6))
+
+# ----------------------------
+# Letra c: Coeficientes de Fourier diretos e via FFT
+# ----------------------------
+def letra_c():
+    print("\n--- Letra c: Coeficientes de Fourier Reais e Complexos ---")
+    T = 10.0
+    N = 1000
+    dx = T / N
+
+    x = np.linspace(-5, 5, N, endpoint=False)
+    y = np.where(x >= 0, 1.0, 0.0)
+
+    # b) Produto interno base cos
+    norms = np.zeros(10)
+    for j in range(1, 11):
+        phi = np.cos(2 * np.pi * j * x / T)
+        norms[j-1] = np.sum(phi**2) * dx
+    print("⟨ϕ_j,ϕ_j⟩ (j=1..10):", np.round(norms, 6))
+
+    # c1) Coeficientes reais diretos
+    a_direct = np.zeros(11)
+    b_direct = np.zeros(11)
+    a_direct[0] = (1/T) * np.sum(y) * dx
+    for j in range(1, 11):
+        a_direct[j] = (2/T) * np.sum(y * np.cos(2*np.pi*j*x/T)) * dx
+        b_direct[j] = (2/T) * np.sum(y * np.sin(2*np.pi*j*x/T)) * dx
+
+    print("\nCoeficientes diretos (a_j e b_j):")
+    for j in range(11):
+        print(f" a[{j:2d}] = {a_direct[j]: .6f},   b[{j:2d}] = {b_direct[j]: .6f}")
+
+    # c2) Coeficientes complexos via FFT
+    Y = np.fft.fft(y)
+    Yh = Y[:11]  # harmônicos 0 a 10
+    c = np.zeros(11, dtype=complex)
+    c[0] = Yh[0] / N
+    for j in range(1, 11):
+        c[j] = Yh[j] / (N / 2)
+
+    print("\nCoeficientes complexos c_j (via FFT):")
+    for j in range(11):
+        re, im = c[j].real, c[j].imag
+        print(f" c[{j:2d}] = {re:+.6f}{im:+.6f}j")
+
+# ----------------------------
+# Execução principal
+# ----------------------------
+if __name__ == "__main__":
+    letra_a()
+    produto_interno_complexo()
+    produto_interno_real()
+    letra_c()

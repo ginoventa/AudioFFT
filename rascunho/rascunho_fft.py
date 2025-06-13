@@ -119,10 +119,7 @@ def letra_c():
     print("\nCoeficientes complexos c_j (via FFT):")
     for j in range(11):
         re, im = c[j].real, c[j].imag
-        a_from_fft = 2 * re
-        b_from_fft = -2 * im
-        print(f" c[{j:2d}] = {re:+.6f}{im:+.6f}j"
-              f"   → a = {a_from_fft:+.6f},   b = {b_from_fft:+.6f}")
+        print(f" c[{j:2d}] = {re:+.6f}{im:+.6f}j")
 
 # ----------------------------
 # Execução principal
