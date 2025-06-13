@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
 
-
 ##
 #Exercício 1 - Relação entre mínimos quadrados trigonométricos e FFT
 ##
@@ -60,7 +59,7 @@ for i in range(11):
 
 a_fft = [f_fft[0].real / N]
 
-for k in range(1, 6): #Normalização dos coeficientes
+for k in range(1, 6): #Normalização dos coeficientes e extração da parte real e imaginária 
     a_sin = 2 * f_fft[k].imag / N
     a_cos = 2 * f_fft[k].real / N
     a_fft.append(a_sin)
