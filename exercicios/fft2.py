@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-##
-#Exercício 2 - Frequências relacionadas aos valores de FFT
-##
+"""
+Exercício 2 - Frequências relacionadas aos valores de FFT
+"""
 
 #Variáveis do programa
 T = 20 #Intervalo

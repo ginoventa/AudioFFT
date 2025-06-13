@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-##
-#Exercício 3 - Obtendo o espectro de um sinal 
-##
+"""
+Exercício 3 - Obtendo o espectro de um sinal 
+"""
 
 #Variáveis do programa
 T = 20 #Intervalo

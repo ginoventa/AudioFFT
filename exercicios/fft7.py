@@ -3,6 +3,13 @@ import numpy as np
 from scipy.fft import fft, ifft, fftfreq
 import matplotlib.pyplot as plt
 
+"""
+Exercício 7 - Filtre sua fala, retirando todos os componentes de frequência
+            acima de 500 Hz. Reproduza sua voz. Para isso, obtenha o sinal através
+            do polinômio interpolador Pn = a0 + ... + aN sin(2π1000x) + aN+1 cos(2π1000x),
+            truncado na frequência que corresponde a mil Hz.
+"""
+
 # Definição dos parâmetros principais
 fs = 16000           # Frequência de amostragem recomendada (Hz)
 duration = 5         # Duração da gravação em segundos

@@ -3,10 +3,10 @@ import numpy as np
 from scipy.fft import fft, ifft, fftfreq
 import matplotlib.pyplot as plt
 
-##
-#Exercício 8 - Filtre sua fala, mantendo componentes entre 500Hz e
-#              1000Hz. Reproduza sua voz.
-##
+"""
+Exercício 8 - Filtre sua fala, mantendo componentes entre 500Hz e
+              1000Hz. Reproduza sua voz.
+"""
 
 
 #Variáveis do programa
